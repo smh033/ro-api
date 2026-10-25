@@ -7,6 +7,14 @@ const result = document.getElementById('result');
 const statusEl = document.getElementById('status-text');
 const submit = document.getElementById('submit-btn');
 const example = document.getElementById('example-btn');
+const browserBack = document.getElementById('browser-back');
+const browserForward = document.getElementById('browser-forward');
+const browserReload = document.getElementById('browser-reload');
+const browserHome = document.getElementById('browser-home');
+const browserForm = document.getElementById('browser-form');
+const browserAddress = document.getElementById('browser-address');
+const browserViewHistory = [null]; // Internal browser navigation; never navigates off GitHub Pages.
+let browserHistoryIndex = 0;
 let type = 'game';
 let currentRequest = 0;
 
@@ -55,9 +63,52 @@ function parseInput(value, suggestedType) {
   if(match) return {type:'user',id:match[1]};
   throw new Error('Use a Roblox game URL, profile URL, or numeric ID.');
 }
+function currentView() { return browserViewHistory[browserHistoryIndex]; }
+function previewUrl(parsed) {
+  return parsed?.type === 'game'
+    ? `https://www.roblox.com/games/${parsed.id}`
+    : parsed?.type === 'user' ? `https://www.roblox.com/users/${parsed.id}/profile` : '';
+}
+function updateBrowserChrome() {
+  browserBack.disabled = browserHistoryIndex === 0;
+  browserForward.disabled = browserHistoryIndex === browserViewHistory.length - 1;
+  browserAddress.value = previewUrl(currentView());
+  browserReload.disabled = !currentView();
+  // These links display public-data previews. They do not load roblox.com HTML.
+  const view = currentView();
+  const url = new URL(location.href);
+  url.search = '';
+  if (view) url.searchParams.set(view.type, view.id);
+  window.history.replaceState(null, '', url);
+}
+function goHome() {
+  currentRequest++;
+  submit.disabled = false;
+  result.replaceChildren();
+  const card = node('div','empty-panel');
+  cardText(card,'div','empty-label','Mini Browser');
+  cardText(card,'h2','','Browse Roblox public pages here.');
+  cardText(card,'p','','Paste a Roblox game or profile link into the address bar above. The page stays inside this site.');
+  result.append(card);
+  input.value = '';
+  updateBrowserChrome();
+}
+function visit(parsed, { push = true } = {}) {
+  if (push) {
+    browserViewHistory.splice(browserHistoryIndex + 1);
+    browserViewHistory.push(parsed);
+    browserHistoryIndex = browserViewHistory.length - 1;
+  }
+  updateBrowserChrome();
+  lookup(parsed);
+}
 function displayError(message){result.replaceChildren();const card=node('div','error-card');cardText(card,'strong','','Couldn’t load that page');cardText(card,'p','',message);result.append(card);}
 function loading(){result.replaceChildren();const card=node('div','loading-card');card.append(node('span','spinner'),node('span','','Loading public Roblox information…'));result.append(card);}
 function shareUrl(kind,id){const url=new URL(location.href);url.search='';url.searchParams.set(kind,id);return url.href;}
+async function copyOfficialUrl(url) {
+  try { await navigator.clipboard.writeText(url); }
+  catch { window.prompt('Copy the official link:', url); }
+}
 async function copyLink(kind,id){const link=shareUrl(kind,id);try {await navigator.clipboard.writeText(link);}catch {window.prompt('Copy this link:',link);return;} const el=document.activeElement;if(el&&el.tagName==='BUTTON'){const old=el.textContent;el.textContent='Link copied ✓';setTimeout(()=>{if(el.isConnected)el.textContent=old;},1400);}}
 function renderCard(data,demo=false) {
   const isGame=data.type==='game';
@@ -74,17 +125,19 @@ function renderCard(data,demo=false) {
   else cardText(main,'p','subtle-note',data.created?'Account created: '+new Date(data.created).toLocaleDateString(): 'Public profile information only.');
   const actions=node('div','card-actions');
   if(!demo){
-    const a=node('a','action primary',isGame?'Open game on Roblox ↗':'Open profile on Roblox ↗');a.href=data.url;a.target='_blank';a.rel='noopener noreferrer';actions.append(a);
-    actions.append(createButton('Copy viewer link',()=>copyLink(isGame?'game':'user',isGame?data.placeId:data.userId)));
+    actions.append(createButton('Copy mini-browser link',()=>copyLink(isGame?'game':'user',isGame?data.placeId:data.userId),'primary'));
+    actions.append(createButton('Copy official Roblox URL',()=>copyOfficialUrl(data.url)));
+    // We intentionally don't link to the actual Roblox page in a new tab.
+
   }else {actions.append(node('span','subtle-note','Deploy the Cloudflare Worker and set config.js for live public data.'));}
   main.append(actions);grid.append(main);wrapper.append(grid);
   const banner=isGame?safePicture(data.preview):null;
   if(banner){const b=node('img','banner');b.src=banner;b.alt=data.name+' preview';b.loading='lazy';wrapper.append(b);}
   result.replaceChildren(wrapper);
-  result.scrollIntoView({behavior:'smooth',block:'nearest'});
+  result.scrollTop = 0;
 }
-async function lookup(parsed,{history=true}={}) {
-  switchType(parsed.type);input.value=parsed.id;
+async function lookup(parsed) {
+  switchType(parsed.type);input.value=parsed.id;browserAddress.value=previewUrl(parsed);
   const request=++currentRequest;
   loading();submit.disabled=true;
   try {
@@ -104,12 +157,52 @@ async function lookup(parsed,{history=true}={}) {
     if(!response.ok)throw new Error(data.error||`API returned status ${response.status}.`);
     if(request!==currentRequest)return;
     renderCard(data);
-    if(history)window.history.replaceState(null,'',shareUrl(parsed.type,parsed.id));
+
   }catch(error){if(request!==currentRequest)return;displayError(error?.message||'Unknown error.');}
   finally{if(request===currentRequest)submit.disabled=false;}
 }
-form.addEventListener('submit',e=>{e.preventDefault();try{const parsed=parseInput(input.value,type);lookup(parsed);}catch(error){displayError(error.message);}});
-example.addEventListener('click',()=>lookup({type:type,id:type==='game'?'4924922222':'1'}));
-const search=new URL(location.href).searchParams;
-if(search.has('game')&&/^\d{1,19}$/.test(search.get('game')))lookup({type:'game',id:search.get('game')},{history:false});
-else if(search.has('user')&&/^\d{1,19}$/.test(search.get('user')))lookup({type:'user',id:search.get('user')},{history:false});
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  try { visit(parseInput(input.value, type)); }
+  catch (error) { displayError(error.message); }
+});
+browserForm.addEventListener('submit', e => {
+  e.preventDefault();
+  try { visit(parseInput(browserAddress.value, type)); }
+  catch (error) { displayError(error.message); }
+});
+example.addEventListener('click', () => visit({ type, id: type === 'game' ? '4924922222' : '1' }));
+browserBack.addEventListener('click', () => {
+  if (browserHistoryIndex <= 0) return;
+  browserHistoryIndex--;
+  const view = currentView();
+  updateBrowserChrome();
+  if (view) lookup(view); else goHome();
+});
+browserForward.addEventListener('click', () => {
+  if (browserHistoryIndex >= browserViewHistory.length - 1) return;
+  browserHistoryIndex++;
+  const view = currentView();
+  updateBrowserChrome();
+  if (view) lookup(view); else goHome();
+});
+browserReload.addEventListener('click', () => {
+  if (currentView()) lookup(currentView());
+});
+browserHome.addEventListener('click', () => {
+  if (currentView()) {
+    browserViewHistory.splice(browserHistoryIndex + 1);
+    browserViewHistory.push(null);
+    browserHistoryIndex = browserViewHistory.length - 1;
+  }
+  goHome();
+});
+// Restore the shared GitHub Pages link after reload.
+const search = new URL(location.href).searchParams;
+if (search.has('game') && /^\d{1,19}$/.test(search.get('game'))) {
+  visit({ type:'game', id:search.get('game') });
+} else if (search.has('user') && /^\d{1,19}$/.test(search.get('user'))) {
+  visit({ type:'user', id:search.get('user') });
+} else {
+  updateBrowserChrome();
+}
