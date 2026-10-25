@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0c12" />
+  <meta name="description" content="A read-only demonstration of browsing public Roblox game and profile information on your own website." />
+  <title>Orbit — Public Roblox Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="nav">
+      <a class="brand" href="./" aria-label="Orbit home"><span class="mark" aria-hidden="true"><span></span></span><span>orbit<span class="dot">.</span></span></a>
+      <span class="nav-tag"><span class="pulse"></span> Public Roblox explorer</span>
+      <a class="nav-help" href="https://www.roblox.com/" target="_blank" rel="noopener noreferrer">Official Roblox <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow"><span class="eyebrow-line"></span> YOUR DOMAIN · PUBLIC CONTENT</div>
+        <h1>Explore Roblox.<br><span>Stay on your site.</span></h1>
+        <p>Look up public game and profile pages without leaving this website. No Roblox login, no passwords, no embedded game player.</p>
+      </section>
+
+      <section class="search-panel" aria-label="Look up public Roblox information">
+        <div class="tabs" role="tablist" aria-label="Content type">
+          <button type="button" class="tab selected" role="tab" id="tab-game" aria-selected="true" data-type="game"><span class="tab-icon">▣</span> Experiences</button>
+          <button type="button" class="tab" role="tab" id="tab-user" aria-selected="false" data-type="user"><span class="tab-icon">◉</span> Profiles</button>
+        </div>
+        <form id="lookup-form" class="lookup-form">
+          <label class="input-wrap" for="lookup-input"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/></svg><input id="lookup-input" type="text" autocomplete="off" spellcheck="false" placeholder="Paste a Roblox game URL or place ID" required /></label>
+          <button class="lookup-button" type="submit" id="submit-btn">Explore <span aria-hidden="true">↗</span></button>
+        </form>
+        <div class="under-search"><span id="status-text" class="mode-text"></span><button id="example-btn" type="button" class="example-link">Try an example ↗</button></div>
+      </section>
+
+      <section id="result" class="result" aria-live="polite">
+        <div class="empty-panel">
+          <div class="empty-art" aria-hidden="true"><span class="pixel pixel-1"></span><span class="pixel pixel-2"></span><span class="pixel pixel-3"></span><span class="pixel pixel-4"></span><span class="pixel pixel-5"></span></div>
+          <div class="empty-label">Your next discovery</div>
+          <h2>Enter a Roblox link to begin.</h2>
+          <p>Public experience and profile information will show up here under your own URL.</p>
+        </div>
+      </section>
+
+      <section class="how" aria-label="How the preview works">
+        <article><span class="step">01</span><h3>GitHub Pages</h3><p>Hosts this custom interface on your domain.</p></article>
+        <article><span class="step">02</span><h3>Cloudflare Worker</h3><p>Requests approved public Roblox data and returns a small JSON response.</p></article>
+        <article><span class="step">03</span><h3>No account proxy</h3><p>Logins and gameplay remain exclusively on official Roblox services.</p></article>
+      </section>
+    </main>
+    <footer>Independent proof of concept · Not affiliated with or endorsed by Roblox · Public information only</footer>
+  </div>
+</body>
+</html>
