@@ -24,7 +24,7 @@
       <section class="hero">
         <div class="eyebrow"><span class="eyebrow-line"></span> YOUR DOMAIN · PUBLIC CONTENT</div>
         <h1>Explore Roblox.<br><span>Stay on your site.</span></h1>
-        <p>Look up public game and profile pages without leaving this website. No Roblox login, no passwords, no embedded game player.</p>
+        <p>Browse public Roblox game and profile information in a built-in mini browser. No new tab needed. This is a public-data viewer, not an embedded copy of Roblox.</p>
       </section>
 
       <section class="search-panel" aria-label="Look up public Roblox information">
@@ -39,12 +39,32 @@
         <div class="under-search"><span id="status-text" class="mode-text"></span><button id="example-btn" type="button" class="example-link">Try an example ↗</button></div>
       </section>
 
-      <section id="result" class="result" aria-live="polite">
-        <div class="empty-panel">
-          <div class="empty-art" aria-hidden="true"><span class="pixel pixel-1"></span><span class="pixel pixel-2"></span><span class="pixel pixel-3"></span><span class="pixel pixel-4"></span><span class="pixel pixel-5"></span></div>
-          <div class="empty-label">Your next discovery</div>
-          <h2>Enter a Roblox link to begin.</h2>
-          <p>Public experience and profile information will show up here under your own URL.</p>
+      <section class="mini-browser" aria-label="Built-in Roblox public information browser">
+        <div class="browser-chrome">
+          <div class="browser-topline"><span class="browser-dot"></span><strong>Mini Browser</strong><span class="browser-mode">Public Roblox previews · stays on this site</span></div>
+          <div class="browser-toolbar">
+            <div class="browser-controls" aria-label="Browser controls">
+              <button type="button" class="browser-icon" id="browser-back" title="Back" aria-label="Go back" disabled>←</button>
+              <button type="button" class="browser-icon" id="browser-forward" title="Forward" aria-label="Go forward" disabled>→</button>
+              <button type="button" class="browser-icon" id="browser-reload" title="Reload" aria-label="Reload current preview">↻</button>
+              <button type="button" class="browser-icon" id="browser-home" title="Home" aria-label="Go to browser home">⌂</button>
+            </div>
+            <form id="browser-form" class="browser-address-form" autocomplete="off">
+              <label for="browser-address" class="sr-only">Roblox public link or ID</label>
+              <span class="browser-address-symbol" aria-hidden="true">⌕</span>
+              <input type="text" id="browser-address" spellcheck="false" autocomplete="off" placeholder="Paste a Roblox game or profile URL…" />
+              <button type="submit" id="browser-go">Go</button>
+            </form>
+          </div>
+          <div class="browser-warning" role="note">This is a viewer for public game/profile data, not the actual Roblox website. Login, purchases and playing games aren't available inside it.</div>
+        </div>
+        <div id="result" class="result browser-content" aria-live="polite">
+          <div class="empty-panel">
+            <div class="empty-art" aria-hidden="true"><span class="pixel pixel-1"></span><span class="pixel pixel-2"></span><span class="pixel pixel-3"></span><span class="pixel pixel-4"></span><span class="pixel pixel-5"></span></div>
+            <div class="empty-label">Your next discovery</div>
+            <h2>Browse without leaving this page.</h2>
+            <p>Enter a Roblox game or profile link above to explore its public information in this window.</p>
+          </div>
         </div>
       </section>
 
